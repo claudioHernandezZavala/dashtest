@@ -19,7 +19,8 @@ import {
   MoreHorizontal,
   Box,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  Bot
 } from 'lucide-react';
 
 // --- Mock Data ---
@@ -64,14 +65,14 @@ const REMINDERS = [
 
 // --- Components ---
 
-const SidebarItem = ({ icon: Icon, label, active, onClick, collapsed }) => (
+const SidebarItem = ({ icon: Icon, label, active, onClick, collapsed, className = '' }) => (
   <button
     onClick={onClick}
     className={`group flex items-center w-full p-3 mb-2 rounded-xl transition-all duration-200 ${
       active 
         ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' 
         : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-    }`}
+    } ${className}`}
   >
     <Icon size={22} strokeWidth={2} />
     <span className={`ml-3 font-medium whitespace-nowrap overflow-hidden transition-all duration-300 ${collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
@@ -115,8 +116,7 @@ const MetricCapsule = ({ label, value, trend, trendValue, icon: Icon, onClick, h
   </Card>
 );
 
-const AIChatWidget = () => {
-  const [isOpen, setIsOpen] = useState(false);
+const AIChatPage = () => {
   const [messages, setMessages] = useState([
     { id: 1, text: "Hi! I'm your store operations assistant. I noticed returns were up 2% yesterday. Would you like a breakdown?", sender: 'ai' }
   ]);
@@ -129,7 +129,7 @@ const AIChatWidget = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isOpen]);
+  }, [messages]);
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -154,63 +154,68 @@ const AIChatWidget = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-      {isOpen && (
-        <div className="mb-4 w-80 md:w-96 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-200">
-          <div className="p-4 bg-slate-800 border-b border-slate-700 flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <h3 className="font-semibold text-white">Store Copilot</h3>
-            </div>
-            <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white">
-              <X size={18} />
-            </button>
-          </div>
-          
-          <div className="h-80 overflow-y-auto p-4 space-y-3 bg-slate-900/95">
-            {messages.map((msg) => (
-              <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${
+    <div className="flex flex-col h-[calc(100vh-6rem)] animate-in fade-in duration-300">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+          <Bot className="text-blue-500" size={32} />
+          Store Copilot
+        </h1>
+        <p className="text-slate-400 text-sm mt-1 ml-11">Ask about inventory, sales trends, or operational issues.</p>
+      </div>
+
+      <div className="flex-1 bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 overflow-hidden flex flex-col relative">
+        <div className="flex-1 overflow-y-auto space-y-6 pr-4 custom-scrollbar">
+          {messages.map((msg) => (
+            <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+               <div className={`flex gap-3 max-w-[80%] ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                 <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                   msg.sender === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
+                 }`}>
+                   {msg.sender === 'user' ? <span className="text-xs font-bold">ME</span> : <Bot size={16} />}
+                 </div>
+                 <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-lg ${
                   msg.sender === 'user' 
-                    ? 'bg-blue-600 text-white rounded-br-none' 
-                    : 'bg-slate-800 text-slate-200 rounded-bl-none border border-slate-700'
+                    ? 'bg-blue-600/20 border border-blue-500/30 text-blue-100 rounded-tr-none' 
+                    : 'bg-slate-700/50 border border-slate-600/50 text-slate-200 rounded-tl-none'
                 }`}>
                   {msg.text}
                 </div>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-
-          <div className="p-3 bg-slate-800 border-t border-slate-700">
-            <div className="relative">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Ask about sales, inventory..."
-                className="w-full bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl pl-4 pr-10 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-slate-600"
-              />
-              <button 
-                onClick={handleSend}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-blue-500 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-colors"
-              >
-                <Send size={16} />
-              </button>
+               </div>
             </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <div className="mt-6">
+          <div className="relative">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              placeholder="Type your question here..."
+              className="w-full bg-slate-900/80 border border-slate-600 text-slate-200 text-base rounded-xl pl-6 pr-14 py-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-slate-500 shadow-xl"
+            />
+            <button 
+              onClick={handleSend}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors shadow-lg"
+            >
+              <Send size={20} />
+            </button>
+          </div>
+          <div className="flex gap-2 mt-3 overflow-x-auto pb-2 scrollbar-hide">
+            {['Check shipping queue', 'Analyze return rates', 'Show stagnant inventory'].map((suggestion, i) => (
+              <button 
+                key={i}
+                onClick={() => { setInput(suggestion); }}
+                className="whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-xs text-slate-400 hover:text-white hover:border-slate-500 transition-colors"
+              >
+                {suggestion}
+              </button>
+            ))}
           </div>
         </div>
-      )}
-
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`group flex items-center justify-center w-14 h-14 rounded-full shadow-lg shadow-blue-900/20 transition-all duration-300 ${
-          isOpen ? 'bg-slate-800 text-white rotate-90' : 'bg-blue-600 text-white hover:bg-blue-500 hover:scale-105'
-        }`}
-      >
-        <MessageSquare size={24} fill={isOpen ? "none" : "currentColor"} />
-      </button>
+      </div>
     </div>
   );
 };
@@ -581,6 +586,8 @@ const App = () => {
     switch (activePage) {
       case 'dashboard':
         return <DashboardHome onNavigate={handleNavigate} />;
+      case 'chat':
+        return <AIChatPage />;
       case 'returns':
         return <ReturnsDetail onBack={() => setActivePage('dashboard')} />;
       case 'workflows':
@@ -614,12 +621,19 @@ const App = () => {
           </span>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2">
+        <nav className="flex-1 px-4 flex flex-col space-y-2">
           <SidebarItem 
             icon={LayoutDashboard} 
             label="Dashboard" 
             active={activePage === 'dashboard' || activePage === 'returns'} 
             onClick={() => setActivePage('dashboard')} 
+            collapsed={sidebarCollapsed}
+          />
+          <SidebarItem 
+            icon={Bot} 
+            label="Store Copilot" 
+            active={activePage === 'chat'} 
+            onClick={() => setActivePage('chat')} 
             collapsed={sidebarCollapsed}
           />
           <SidebarItem 
@@ -636,6 +650,9 @@ const App = () => {
             onClick={() => setActivePage('reminders')} 
             collapsed={sidebarCollapsed}
           />
+          
+          <div className="flex-1" />
+
           <SidebarItem 
             icon={Settings} 
             label="Settings" 
@@ -645,7 +662,7 @@ const App = () => {
           />
         </nav>
 
-        <div className="p-4 mt-auto">
+        <div className="p-4 border-t border-slate-800">
           <div className={`rounded-xl bg-slate-800 p-3 flex items-center gap-3 transition-all duration-300 ${sidebarCollapsed ? 'justify-center' : ''}`}>
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 shrink-0" />
             <div className={`overflow-hidden transition-all duration-300 ${sidebarCollapsed ? 'w-0 opacity-0 hidden' : 'w-auto opacity-100'}`}>
@@ -668,8 +685,6 @@ const App = () => {
         </div>
       </main>
 
-      {/* AI Helper Widget */}
-      <AIChatWidget />
     </div>
   );
 };
